@@ -103,10 +103,19 @@ describe("loadConfig JSON5", () => {
     ).toMatchObject({ success: true });
   });
 
-  it("prefers JSON and does not fall back when it is invalid", async () => {
+  it("loads JSON5 syntax from konsistent.json and prefers it over konsistent.json5", async () => {
     writeFileSync(join(tmpDir, "konsistent.json"), config);
+    writeFileSync(join(tmpDir, "konsistent.json5"), "invalid");
     expect(await loadConfig({})).toEqual({
-      error: `Invalid JSON in config file: ${join(tmpDir, "konsistent.json")}`,
+      config: { conventions: [], version: "v1" },
+      success: true,
+    });
+  });
+
+  it("does not fall back when konsistent.json is invalid", async () => {
+    writeFileSync(join(tmpDir, "konsistent.json"), "invalid");
+    expect(await loadConfig({})).toEqual({
+      error: `Invalid JSON5 in config file: ${join(tmpDir, "konsistent.json")}`,
       success: false,
     });
   });

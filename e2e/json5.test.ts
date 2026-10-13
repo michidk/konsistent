@@ -31,6 +31,15 @@ describe("JSON5 configuration", () => {
     await expect(runCli(["check"])).resolves.not.toThrow();
   });
 
+  it.each(["validate", "check"])(
+    "accepts JSON5 syntax in .json files with %s",
+    async (command) => {
+      await expect(
+        runCli([command, "--config-path", "config.json"])
+      ).resolves.not.toThrow();
+    }
+  );
+
   it("reports violations from an explicit JSON5 configuration", async () => {
     await expect(
       runCli(["check", "--config-path", "broken.json5"])

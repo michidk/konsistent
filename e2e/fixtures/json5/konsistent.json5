@@ -1,6 +1,6 @@
 {
   // JSON5 configuration can use comments, unquoted keys, and trailing commas.
   version: 'v1',
-  conventionSources: { local: './conventions.json5' },
+  conventionSources: { local: './conventions.json' },
   conventions: ['local/must-export-value'],
 }

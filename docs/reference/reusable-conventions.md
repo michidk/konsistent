@@ -35,7 +35,7 @@ The vendor prefix is local to your config — you can bind any prefix to any sou
 }
 ```
 
-Source files ending in `.json5` use JSON5 parsing, including files resolved from an npm package's `exports["./konsistent"]`. They accept comments, single-quoted strings, unquoted keys, and trailing commas. Other files retain strict JSON parsing. The reusable-convention schema is the same for both formats.
+All source files use JSON5 parsing regardless of their extension, including files resolved from an npm package's `exports["./konsistent"]`. They accept comments, single-quoted strings, unquoted keys, and trailing commas. Existing valid JSON remains supported, and the reusable-convention schema is unchanged.
 
 `conventionSources` is optional. Existing configs without it keep working unchanged.
 
@@ -221,7 +221,7 @@ All errors below are returned from `loadConfig()` as `{ success: false, error }`
 | String-form reference to a paths-less convention | `Convention "<prefix>/<name>" cannot be referenced by string; it has no "paths". Use { use: "<prefix>/<name>", paths: [...] } form.` | Switch to the `use` form and supply `paths` for your project. |
 | `use` reference with no `paths` on either side | `Convention "<prefix>/<name>" referenced in conventions[<i>] has no "paths". Either the reusable convention must declare paths, or the override must supply paths.` | Add `paths` to your override. |
 | Path source unreadable | `Convention source "<prefix>" → "<value>": could not read file at <path>.` | Check the path exists and is readable. |
-| Path source malformed JSON | `Convention source "<prefix>" → "<value>": malformed JSON at <path>.` | Fix the JSON or rebuild the source artifact. |
+| Path source malformed JSON | `Convention source "<prefix>" → "<value>": malformed JSON5 at <path>.` | Fix the JSON or rebuild the source artifact. |
 | npm source not installed | `Convention source "<prefix>" → "<specifier>": could not resolve npm package "<specifier>". The package may not be installed under the consumer's project.` | Install the package as a dependency. |
 | npm source missing exports condition | `Convention source "<prefix>" → "<specifier>": package does not declare an exports["./konsistent"] entry.` | The source package isn't a reusable-convention package; check the spelling or pick a different source. |
 | Reusable-convention package fails schema validation | `Convention source "<prefix>" → "<specifier>": invalid reusable-convention package at <path>: <issues>` | The author shipped an invalid package; report upstream. |

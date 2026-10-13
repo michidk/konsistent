@@ -191,13 +191,12 @@ function parseAndValidate(opts: {
 }): LoadResult {
   const { prefix, sourceLabel, locationLabel, raw } = opts;
 
-  const format = locationLabel.endsWith(".json5") ? "JSON5" : "JSON";
   let json: unknown;
   try {
-    json = format === "JSON5" ? JSON5.parse(raw) : JSON.parse(raw);
+    json = JSON5.parse(raw);
   } catch {
     return {
-      error: `Convention source "${prefix}" → ${sourceLabel}: malformed ${format} at ${locationLabel}.`,
+      error: `Convention source "${prefix}" → ${sourceLabel}: malformed JSON5 at ${locationLabel}.`,
       success: false,
     };
   }

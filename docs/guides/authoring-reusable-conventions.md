@@ -18,7 +18,7 @@ A reusable-conventions package ships a single JSON artifact at a fixed exports c
 }
 ```
 
-You can write the conventions directly in JSON or JSON5 (using a `.json5` file in the exports entry), but the recommended path is to author them in TypeScript with `defineConventions()` from `@konsistent/convention` and let the package's `konsistent-convention emit` CLI build the JSON for you. You get full editor autocomplete, schema validation at build time, and a single source of truth for the published artifact — without writing a build script of your own.
+You can write the conventions directly in JSON or JSON5 regardless of the exported file's extension, but the recommended path is to author them in TypeScript with `defineConventions()` from `@konsistent/convention` and let the package's `konsistent-convention emit` CLI build the JSON for you. You get full editor autocomplete, schema validation at build time, and a single source of truth for the published artifact — without writing a build script of your own.
 
 ## 1. Install `@konsistent/convention`
 

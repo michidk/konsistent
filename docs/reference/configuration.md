@@ -4,7 +4,7 @@ The `konsistent.json` file declares the structural conventions the CLI enforces.
 
 ## JSON5 support
 
-Use `konsistent.json5` for comments, unquoted keys, single-quoted strings, and trailing commas:
+All configuration files use JSON5 parsing. Both `konsistent.json` and `konsistent.json5` accept comments, unquoted keys, single-quoted strings, and trailing commas:
 
 ```json5
 {
@@ -16,7 +16,7 @@ Use `konsistent.json5` for comments, unquoted keys, single-quoted strings, and t
 
 Without `--config-path` or `--config-package`, the CLI looks for `konsistent.json`, then `konsistent.json5`, in the current directory. If both exist, `konsistent.json` wins. An invalid selected file produces an error; the CLI does not fall back to the other format.
 
-`--config-path` also accepts `.json5` files. The extension selects the parser; `.json` files still require strict JSON. Both formats use the same schema and validation.
+`--config-path` also accepts JSON5 syntax regardless of the file extension. Existing valid JSON remains supported because JSON is a subset of JSON5. Schema validation is unchanged.
 
 With `--config-package`, an explicit `package.json` `konsistent` field takes priority. Otherwise, the CLI searches `dist/konsistent.json`, `dist/konsistent.json5`, `konsistent.json`, then `konsistent.json5` within the package.
 

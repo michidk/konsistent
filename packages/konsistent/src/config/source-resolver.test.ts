@@ -43,8 +43,15 @@ function setupNpmFixture(opts: {
 }
 
 describe("resolveSources", () => {
-  it.each(["path", "npm"])("loads a JSON5 %s source", async (kind) => {
-    const content = `{
+  it.each([
+    ["path", "json"],
+    ["path", "json5"],
+    ["npm", "json"],
+    ["npm", "json5"],
+  ])(
+    "loads JSON5 syntax from a %s source with .%s extension",
+    async (kind, extension) => {
+      const content = `{
       // Shared conventions
       conventionSpecVersion: 'v1',
       conventions: [{
@@ -52,41 +59,40 @@ describe("resolveSources", () => {
         paths: 'src/*.ts', must: { haveType: 'file' },
       }],
     }`;
-    let configDir = tmpDir;
-    let source = "./conventions.json5";
-    if (kind === "npm") {
-      ({ configDir } = setupNpmFixture({
-        conventionsContent: content,
-        conventionsRelPath: "conventions.json5",
-        packageJson: { exports: { "./konsistent": "./conventions.json5" } },
-        packageName: "json5-conventions",
-      }));
-      source = "json5-conventions";
-    } else {
-      writeFileSync(join(tmpDir, "conventions.json5"), content);
-    }
-    const result = await resolveSources({
-      configDir,
-      conventionSources: { shared: source },
-    });
-    expect(result.success).toBe(true);
-    if (result.success) {
-      expect(result.sourceMap.get("shared")?.get("must-be-file")).toMatchObject(
-        {
+      let configDir = tmpDir;
+      let source = `./conventions.${extension}`;
+      if (kind === "npm") {
+        ({ configDir } = setupNpmFixture({
+          conventionsContent: content,
+          conventionsRelPath: `conventions.${extension}`,
+          packageJson: {
+            exports: { "./konsistent": `./conventions.${extension}` },
+          },
+          packageName: "json5-conventions",
+        }));
+        source = "json5-conventions";
+      } else {
+        writeFileSync(join(tmpDir, `conventions.${extension}`), content);
+      }
+      const result = await resolveSources({
+        configDir,
+        conventionSources: { shared: source },
+      });
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(
+          result.sourceMap.get("shared")?.get("must-be-file")
+        ).toMatchObject({
           must: { haveType: "file" },
           paths: "src/*.ts",
-        }
-      );
+        });
+      }
     }
-  });
+  );
 
   it.each([
     ["json5", "{ broken:", "malformed JSON5"],
-    [
-      "json",
-      "{ conventionSpecVersion: 'v1', conventions: [] }",
-      "malformed JSON",
-    ],
+    ["json", "{ broken:", "malformed JSON5"],
     [
       "json5",
       "{ conventionSpecVersion: 'v2' }",

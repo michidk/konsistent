@@ -117,13 +117,12 @@ export async function loadConfig(
     return { error: `Could not read config file: ${filePath}`, success: false };
   }
 
-  const format = filePath.endsWith(".json5") ? "JSON5" : "JSON";
   let json: unknown;
   try {
-    json = format === "JSON5" ? JSON5.parse(raw) : JSON.parse(raw);
+    json = JSON5.parse(raw);
   } catch {
     return {
-      error: `Invalid ${format} in config file: ${filePath}`,
+      error: `Invalid JSON5 in config file: ${filePath}`,
       success: false,
     };
   }
