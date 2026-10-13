@@ -1,6 +1,24 @@
-# konsistent.json
+# Configuration
 
 The `konsistent.json` file declares the structural conventions the CLI enforces. By default it lives at the project root; use `--config-path` to put it elsewhere, or `--config-package <pkg>` to load it from an installed npm package (see [cli.md](./cli.md#flags)).
+
+## JSON5 support
+
+Use `konsistent.json5` for comments, unquoted keys, single-quoted strings, and trailing commas:
+
+```json5
+{
+  // Rules for this project
+  version: 'v1',
+  conventions: [],
+}
+```
+
+Without `--config-path` or `--config-package`, the CLI looks for `konsistent.json`, then `konsistent.json5`, in the current directory. If both exist, `konsistent.json` wins. An invalid selected file produces an error; the CLI does not fall back to the other format.
+
+`--config-path` also accepts `.json5` files. The extension selects the parser; `.json` files still require strict JSON. Both formats use the same schema and validation.
+
+With `--config-package`, an explicit `package.json` `konsistent` field takes priority. Otherwise, the CLI searches `dist/konsistent.json`, `dist/konsistent.json5`, `konsistent.json`, then `konsistent.json5` within the package.
 
 ## Top-level shape
 
@@ -28,7 +46,7 @@ The `konsistent.json` file declares the structural conventions the CLI enforces.
 | `version` | `"v1"` | yes | Configuration version. Currently always `"v1"`. |
 | `$schema` | string | no | Path to `konsistent.schema.json` for editor autocomplete. |
 | `conventions` | `Convention[]` | yes | Array of convention rules (see below). Each entry can be a hand-written convention, a string reference, or a `use` reference — see [reusable-conventions.md](./reusable-conventions.md). |
-| `conventionSources` | `Record<string, string>` | no | Vendor-prefix bindings for reusable convention packages or local JSON files. See [reusable-conventions.md](./reusable-conventions.md). |
+| `conventionSources` | `Record<string, string>` | no | Vendor-prefix bindings for reusable convention packages or local JSON or JSON5 files. See [reusable-conventions.md](./reusable-conventions.md). |
 | `kebabToPascalMap` | `Record<string, string>` | no | Override default kebab → PascalCase conversion. See [case-maps.md](./case-maps.md). |
 | `kebabToCamelMap` | `Record<string, string>` | no | Override default kebab → camelCase conversion. See [case-maps.md](./case-maps.md). |
 

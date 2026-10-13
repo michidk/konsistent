@@ -74,6 +74,61 @@ describe("loadConfig", () => {
   });
 });
 
+describe("loadConfig JSON5", () => {
+  let tmpDir: string;
+  const config = "{ /* config */ version: 'v1', conventions: [], }";
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(join(tmpdir(), "konsistent-json5-"));
+    vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
+    writeFileSync(join(tmpDir, "konsistent.json5"), config);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    rmSync(tmpDir, { force: true, recursive: true });
+  });
+
+  it("discovers konsistent.json5", async () => {
+    expect(await loadConfig({})).toEqual({
+      config: { conventions: [], version: "v1" },
+      success: true,
+    });
+  });
+
+  it("loads an explicit JSON5 path even when konsistent.json exists", async () => {
+    writeFileSync(join(tmpDir, "konsistent.json"), "invalid");
+    expect(
+      await loadConfig({ configPath: join(tmpDir, "konsistent.json5") })
+    ).toMatchObject({ success: true });
+  });
+
+  it("prefers JSON and does not fall back when it is invalid", async () => {
+    writeFileSync(join(tmpDir, "konsistent.json"), config);
+    expect(await loadConfig({})).toEqual({
+      error: `Invalid JSON in config file: ${join(tmpDir, "konsistent.json")}`,
+      success: false,
+    });
+  });
+
+  it("reports malformed JSON5 with its file path", async () => {
+    const configPath = join(tmpDir, "konsistent.json5");
+    writeFileSync(configPath, "{ version: 'v1', conventions: [ }");
+    expect(await loadConfig({ configPath })).toEqual({
+      error: `Invalid JSON5 in config file: ${configPath}`,
+      success: false,
+    });
+  });
+
+  it("validates JSON5 against the config schema", async () => {
+    writeFileSync(join(tmpDir, "konsistent.json5"), "{ version: 'v2' }");
+    expect(await loadConfig({})).toMatchObject({
+      error: expect.stringContaining("Invalid config:"),
+      success: false,
+    });
+  });
+});
+
 describe("loadConfig --config-package", () => {
   let tmpDir: string;
   let consumerDir: string;
@@ -135,6 +190,42 @@ describe("loadConfig --config-package", () => {
 
     return pkgDir;
   }
+
+  it.each(["konsistent.json5", "dist/konsistent.json5", "custom/config.json5"])(
+    "loads JSON5 from a package at %s",
+    async (configAtCustomPath) => {
+      const packageJson: Record<string, unknown> = { name: "json5-config" };
+      if (configAtCustomPath.startsWith("custom/")) {
+        packageJson.konsistent = configAtCustomPath;
+      }
+      const pkgDir = setupPackage({
+        configAtCustomPath,
+        packageJson,
+        packageName: "json5-config",
+      });
+      writeFileSync(
+        join(pkgDir, configAtCustomPath),
+        "{ version: 'v1', conventions: [], }"
+      );
+      expect(await loadConfig({ configPackage: "json5-config" })).toMatchObject(
+        {
+          config: { conventions: [], version: "v1" },
+          success: true,
+        }
+      );
+    }
+  );
+
+  it("prefers JSON over JSON5 within a package directory", async () => {
+    const pkgDir = setupPackage({
+      configAtRoot: true,
+      packageName: "both-formats",
+    });
+    writeFileSync(join(pkgDir, "konsistent.json5"), "invalid");
+    expect(await loadConfig({ configPackage: "both-formats" })).toMatchObject({
+      success: true,
+    });
+  });
 
   it("loads konsistent.json from the package root", async () => {
     setupPackage({ configAtRoot: true, packageName: "@scope/root-config" });
@@ -224,7 +315,9 @@ describe("loadConfig --config-package", () => {
     const result = await loadConfig({ configPackage: "@scope/no-config" });
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error).toContain("no konsistent.json found");
+      expect(result.error).toContain(
+        "no konsistent.json or konsistent.json5 found"
+      );
       expect(result.error).toContain("dist/konsistent.json");
       expect(result.error).toContain("/konsistent.json");
     }

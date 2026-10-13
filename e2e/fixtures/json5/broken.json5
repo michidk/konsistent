@@ -1,0 +1,7 @@
+{
+  version: 'v1',
+  conventions: [{
+    paths: 'src/*.ts',
+    must: { exportValues: ['missing'] },
+  }],
+}

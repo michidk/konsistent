@@ -16,8 +16,8 @@ Commands:
   help        Show this help message
 
 Check options:
-  --config-path <path>       Path to konsistent.json config file
-  --config-package <pkg>     NPM package to load konsistent.json from (alternative to --config-path)
+  --config-path <path>       Path to JSON or JSON5 config file
+  --config-package <pkg>     NPM package to load config from (alternative to --config-path)
   --format <format>          Output format (default, json, github, markdown)
   --verbose                  Show execution time and expanded details
   --max-diagnostics <n>      Maximum number of diagnostics to report (default: 100)
@@ -29,8 +29,8 @@ Check options:
   --modified                  Check staged, unstaged, and untracked non-ignored files
 
 Validate options:
-  --config-path <path>    Path to konsistent.json config file
-  --config-package <pkg>  NPM package to load konsistent.json from (alternative to --config-path)
+  --config-path <path>    Path to JSON or JSON5 config file
+  --config-package <pkg>  NPM package to load config from (alternative to --config-path)
 
 Global options:
   --help, -h              Show help

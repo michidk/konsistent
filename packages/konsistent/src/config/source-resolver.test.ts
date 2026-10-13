@@ -43,6 +43,68 @@ function setupNpmFixture(opts: {
 }
 
 describe("resolveSources", () => {
+  it.each(["path", "npm"])("loads a JSON5 %s source", async (kind) => {
+    const content = `{
+      // Shared conventions
+      conventionSpecVersion: 'v1',
+      conventions: [{
+        name: 'must-be-file', description: 'A file.',
+        paths: 'src/*.ts', must: { haveType: 'file' },
+      }],
+    }`;
+    let configDir = tmpDir;
+    let source = "./conventions.json5";
+    if (kind === "npm") {
+      ({ configDir } = setupNpmFixture({
+        conventionsContent: content,
+        conventionsRelPath: "conventions.json5",
+        packageJson: { exports: { "./konsistent": "./conventions.json5" } },
+        packageName: "json5-conventions",
+      }));
+      source = "json5-conventions";
+    } else {
+      writeFileSync(join(tmpDir, "conventions.json5"), content);
+    }
+    const result = await resolveSources({
+      configDir,
+      conventionSources: { shared: source },
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.sourceMap.get("shared")?.get("must-be-file")).toMatchObject(
+        {
+          must: { haveType: "file" },
+          paths: "src/*.ts",
+        }
+      );
+    }
+  });
+
+  it.each([
+    ["json5", "{ broken:", "malformed JSON5"],
+    [
+      "json",
+      "{ conventionSpecVersion: 'v1', conventions: [] }",
+      "malformed JSON",
+    ],
+    [
+      "json5",
+      "{ conventionSpecVersion: 'v2' }",
+      "invalid reusable-convention package",
+    ],
+  ])("rejects invalid %s source: %s", async (extension, content, message) => {
+    writeFileSync(join(tmpDir, `source.${extension}`), content);
+    expect(
+      await resolveSources({
+        configDir: tmpDir,
+        conventionSources: { shared: `./source.${extension}` },
+      })
+    ).toMatchObject({
+      error: expect.stringContaining(message),
+      success: false,
+    });
+  });
+
   it("resolves a path-form source relative to the config dir", async () => {
     writeFileSync(
       join(tmpDir, "common.json"),

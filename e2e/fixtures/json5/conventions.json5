@@ -1,0 +1,9 @@
+{
+  conventionSpecVersion: 'v1',
+  conventions: [{
+    name: 'must-export-value',
+    description: 'Source files must export value.',
+    paths: 'src/*.ts',
+    must: { exportValues: ['value'] },
+  }],
+}

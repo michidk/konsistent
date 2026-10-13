@@ -18,7 +18,7 @@ For any of those cases, the consumer adds one entry to `conventionSources` and r
 
 | Value starts with | Interpretation |
 | --- | --- |
-| `.` or `/` | Relative path to a JSON file. Resolved against the config file's directory (not `process.cwd()`). |
+| `.` or `/` | Path to a JSON or JSON5 file. Resolved against the config file's directory (not `process.cwd()`). |
 | Anything else | npm package name. Resolved via the package's `exports["./konsistent"]` condition. |
 
 The vendor prefix is local to your config — you can bind any prefix to any source. Two configs in the same monorepo can pick different prefixes for the same upstream package without conflict.
@@ -34,6 +34,8 @@ The vendor prefix is local to your config — you can bind any prefix to any sou
   "conventions": []
 }
 ```
+
+Source files ending in `.json5` use JSON5 parsing, including files resolved from an npm package's `exports["./konsistent"]`. They accept comments, single-quoted strings, unquoted keys, and trailing commas. Other files retain strict JSON parsing. The reusable-convention schema is the same for both formats.
 
 `conventionSources` is optional. Existing configs without it keep working unchanged.
 

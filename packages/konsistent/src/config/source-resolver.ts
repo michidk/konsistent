@@ -4,6 +4,7 @@ import {
   ReusableConventionsPackageV1Schema,
   type ReusableConventionV1,
 } from "@konsistent/convention";
+import JSON5 from "json5";
 import { exports as resolveExportsField } from "resolve.exports";
 import {
   classifySource,
@@ -190,12 +191,13 @@ function parseAndValidate(opts: {
 }): LoadResult {
   const { prefix, sourceLabel, locationLabel, raw } = opts;
 
+  const format = locationLabel.endsWith(".json5") ? "JSON5" : "JSON";
   let json: unknown;
   try {
-    json = JSON.parse(raw);
+    json = format === "JSON5" ? JSON5.parse(raw) : JSON.parse(raw);
   } catch {
     return {
-      error: `Convention source "${prefix}" → ${sourceLabel}: malformed JSON at ${locationLabel}.`,
+      error: `Convention source "${prefix}" → ${sourceLabel}: malformed ${format} at ${locationLabel}.`,
       success: false,
     };
   }

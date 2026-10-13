@@ -42,6 +42,7 @@
   "dependencies": {
     "@konsistent/convention": "workspace:*",
     "citty": "catalog:",
+    "json5": "^2.2.3",
     "picocolors": "^1",
     "picomatch": "^4",
     "resolve.exports": "^2",

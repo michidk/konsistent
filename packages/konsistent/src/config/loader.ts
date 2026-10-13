@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
+import JSON5 from "json5";
 import {
   classifySource,
   extractPackageName,
@@ -13,7 +14,7 @@ import type { ConfigV1 } from "./schema.js";
 import { ConfigV1Schema } from "./schema.js";
 import { resolveSources } from "./source-resolver.js";
 
-const CONFIG_FILENAME = "konsistent.json";
+const CONFIG_FILENAMES = ["konsistent.json", "konsistent.json5"];
 
 export type LoadConfigResult =
   | { success: true; config: ConfigV1 }
@@ -93,7 +94,12 @@ export async function loadConfig(
 
   let filePath: string;
   if (opts.configPackage === undefined) {
-    filePath = opts.configPath ?? resolve(process.cwd(), CONFIG_FILENAME);
+    filePath =
+      opts.configPath ??
+      (await firstExistingPath(
+        CONFIG_FILENAMES.map((name) => resolve(process.cwd(), name))
+      )) ??
+      resolve(process.cwd(), "konsistent.json");
   } else {
     const resolved = await resolveConfigPackagePath({
       configPackage: opts.configPackage,
@@ -111,12 +117,13 @@ export async function loadConfig(
     return { error: `Could not read config file: ${filePath}`, success: false };
   }
 
+  const format = filePath.endsWith(".json5") ? "JSON5" : "JSON";
   let json: unknown;
   try {
-    json = JSON.parse(raw);
+    json = format === "JSON5" ? JSON5.parse(raw) : JSON.parse(raw);
   } catch {
     return {
-      error: `Invalid JSON in config file: ${filePath}`,
+      error: `Invalid ${format} in config file: ${filePath}`,
       success: false,
     };
   }
@@ -251,24 +258,28 @@ async function resolveConfigPackagePath(opts: {
     }
   }
 
-  const distCandidate = join(pkgDir, "dist", CONFIG_FILENAME);
-  attempted.push(distCandidate);
-  if (await pathExists(distCandidate)) {
-    return { filePath: distCandidate, success: true };
-  }
-
-  const rootCandidate = join(pkgDir, CONFIG_FILENAME);
-  attempted.push(rootCandidate);
-  if (await pathExists(rootCandidate)) {
-    return { filePath: rootCandidate, success: true };
+  const candidates = [join(pkgDir, "dist"), pkgDir].flatMap((directory) =>
+    CONFIG_FILENAMES.map((filename) => join(directory, filename))
+  );
+  attempted.push(...candidates);
+  const filePath = await firstExistingPath(candidates);
+  if (filePath !== undefined) {
+    return { filePath, success: true };
   }
 
   return {
-    error: `--config-package "${configPackage}": no konsistent.json found in package. Looked at:\n${attempted
+    error: `--config-package "${configPackage}": no konsistent.json or konsistent.json5 found in package. Looked at:\n${attempted
       .map((p) => `  - ${p}`)
       .join("\n")}`,
     success: false,
   };
+}
+
+async function firstExistingPath(
+  candidates: string[]
+): Promise<string | undefined> {
+  const exists = await Promise.all(candidates.map(pathExists));
+  return candidates.find((_, index) => exists[index]);
 }
 
 function isBarePackageName(value: string): boolean {

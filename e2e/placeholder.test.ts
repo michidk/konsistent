@@ -665,7 +665,9 @@ describe("--config-package flag", () => {
         status: number;
       };
       expect(error.code ?? error.status).toBe(1);
-      expect(error.stderr).toContain("no konsistent.json found");
+      expect(error.stderr).toContain(
+        "no konsistent.json or konsistent.json5 found"
+      );
     }
   });
 

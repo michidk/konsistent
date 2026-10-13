@@ -36,11 +36,11 @@ const checkArgs = {
   },
   "config-package": {
     description:
-      "NPM package name to load konsistent.json from (alternative to --config-path)",
+      "NPM package name to load config from (alternative to --config-path)",
     type: "string" as const,
   },
   "config-path": {
-    description: "Path to konsistent.json config file",
+    description: "Path to JSON or JSON5 config file",
     type: "string" as const,
   },
   "diagnostic-level": {

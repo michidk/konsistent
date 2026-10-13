@@ -33,8 +33,8 @@ konsistent check --modified
 
 | Flag | Type | Default | Description |
 | --- | --- | --- | --- |
-| `--config-path <path>` | string | `konsistent.json` (project root) | Path to the config file |
-| `--config-package <pkg>` | string | — | NPM package name to load `konsistent.json` from. Resolved from the consuming project's `node_modules`. Mutually exclusive with `--config-path` |
+| `--config-path <path>` | string | `konsistent.json`, then `konsistent.json5` (current directory) | Path to a JSON or JSON5 config file |
+| `--config-package <pkg>` | string | — | NPM package name to load a JSON or JSON5 config from. Resolved from the consuming project's `node_modules`. Mutually exclusive with `--config-path` |
 | `--format <format>` | `default` \| `json` \| `github` \| `markdown` | `default` (auto-detects `github` in CI) | Output format |
 | `--verbose` | boolean | `false` | Show execution time and expanded details |
 | `--max-diagnostics <n>` | string (parsed as integer) | `100` | Maximum diagnostics to print before truncating |
